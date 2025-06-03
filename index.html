@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion Achats, Ventes et Dettes</title>
+    <style>
+        :root {
+            --primary-color: #007bff;
+            --secondary-color: #6c757d;
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+            --warning-color: #ffc107;
+            --info-color: #17a2b8; 
+            --light-color: #f8f9fa;
+            --dark-color: #343a40;
+            --paid-color: #a3d9a5; /* Vert clair pour payé */
+            --unpaid-color: #f9caca; /* Rouge clair pour non payé */
+            --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            font-family: var(--font-family);
+            margin: 0;
+            padding: 0;
+            background-color: var(--light-color);
+            color: var(--dark-color);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1300px; /* Légèrement augmenté pour plus de colonnes potentielles */
+            margin: 20px auto;
+            height: calc(100vh - 9.5rem);
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 0 15px rgba(0,0,0,0.5);
+            border-radius: 8px;
+        }
+
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 1rem 0;
+            text-align: center;
+            margin-bottom: 20px;
+            border-radius: 8px 8px 0 0;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2rem;
+        }
+
+        nav ul {
+            list-style: none;
+            padding: 0;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        nav ul li {
+            display: inline-block;
+            margin: 0 10px;
+        }
+
+        nav ul li button, .btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        nav ul li button:hover, .btn:hover {
+            background-color: #0056b3;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary { background-color: var(--secondary-color); }
+        .btn-secondary:hover { background-color: #545b62; }
+        .btn-success { background-color: var(--success-color); }
+        .btn-success:hover { background-color: #1e7e34; }
+        .btn-danger { background-color: var(--danger-color); }
+        .btn-danger:hover { background-color: #b21f2d; }
+        .btn-warning { background-color: var(--warning-color); color: #333; }
+        .btn-warning:hover { background-color: #d39e00; }
+        .btn-info { background-color: var(--info-color); }
+        .btn-info:hover { background-color: #117a8b; }
+        .btn-toggle-status { padding: 6px 10px; font-size: 0.9em; }
+
+
+        .screen { display: none; }
+        .screen.active { display: block; }
+
+        h2 {
+            color: var(--primary-color);
+            text-align: center;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+        #detteScreen h2 { color: var(--info-color); border-bottom-color: var(--info-color); }
+
+
+        form {
+            background-color: var(--light-color);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.05);
+        }
+
+        form label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        form input[type="text"],
+        form input[type="number"],
+        form input[type="date"],
+        form select,
+        form textarea {
+            width: calc(100% - 22px);
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        form textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+        
+        form input[type="number"]::-webkit-inner-spin-button,
+        form input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        form input[type="number"] {
+            -moz-appearance: textfield;
+        }
+
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        table th, table td {
+            border: 1px solid #ddd;
+            padding: 10px; /* Réduit pour plus de colonnes */
+            text-align: left;
+            font-size: 0.95em; /* Légèrement réduit pour plus de colonnes */
+        }
+
+        table th {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        #detteScreen table th { background-color: var(--info-color); }
+
+
+        table tr:nth-child(even) {
+            background-color: var(--light-color);
+        }
+        
+        table tr:hover {
+            background-color: #e9ecef;
+        }
+        
+        .status-paid { background-color: var(--paid-color) !important; color: #206322; }
+        .status-unpaid { background-color: var(--unpaid-color) !important; color: #7d2121; }
+
+
+        .actions button {
+            margin-right: 5px;
+            padding: 8px 12px;
+        }
+
+        .totals {
+            background-color: var(--dark-color);
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        .totals p { margin: 5px 0; font-size: 1.1rem; }
+        .totals strong { font-weight: bold; }
+
+        .alert-stock {
+            color: var(--danger-color);
+            font-weight: bold;
+        }
+        
+        .product-stock-info {
+            font-size: 0.9em;
+            color: var(--secondary-color);
+            margin-top: -10px;
+            margin-bottom: 15px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 992px) { 
+             nav ul li {
+                margin: 0 5px; 
+            }
+            nav ul li button {
+                padding: 10px 15px;
+            }
+        }
+
+
+        @media (max-width: 768px) {
+            nav ul li {
+                display: block;
+                margin: 3rem 0;
+            }
+            .container{
+                height: 5rem;
+            }
+            li button, .btn {
+                width: 100%;
+                box-sizing: border-box;
+            }
+            form input[type="text"],
+            form input[type="number"],
+            form input[type="date"],
+            form select,
+            form textarea {
+                width: 100%;
+            }
+            table, thead, tbody, th, td, tr {
+                display: block;
+            }
+            table thead tr {
+                position: absolute;
+                top: -9999px;
+                left: -9999px;
+            }
+            table tr {
+                border: 1px solid #ccc;
+                margin-bottom: 10px;
+                border-radius: 5px;
+            }
+            table td {
+                border: none;
+                border-bottom: 1px solid #eee;
+                position: relative;
+                padding-left: 45%; /* Ajusté pour plus de labels */
+                text-align: right;
+                font-size: 1em; /* Rétablir la taille pour mobile */
+            }
+            table td::before {
+                content: attr(data-label);
+                position: absolute;
+                left: 10px;
+                width: calc(45% - 20px); /* Ajusté */
+                padding-right: 10px;
+                white-space: nowrap;
+                font-weight: bold;
+                text-align: left;
+            }
+            .actions button {
+                display: inline-block;
+                margin: 5px 5px 5px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>G-STOCK</h1>
+        </header>
+
+        <div id="homeScreen" class="screen active">
+            <nav>
+                <ul>
+                    <li><button onclick="showScreen('achatScreen')">Gestion des Achats</button></li>
+                    <li><button onclick="showScreen('venteScreen')">Gestion des Ventes</button></li>
+                    <li><button class="btn-info" onclick="showScreen('detteScreen')">Gestion des Dettes</button></li>
+                </ul>
+            </nav>
+             <!-- Carousel -->
+        </div>
+
+        <!-- Section Achats -->
+        <div id="achatScreen" class="screen">
+            <h2>Gestion des Achats</h2>
+            <button class="btn btn-secondary" onclick="showScreen('homeScreen')">accueil</button>
+            
+            <form id="achatForm">
+                <h3>Ajouter/Modifier un Achat</h3>
+                <input type="hidden" id="achatId">
+                <div>
+                    <label for="achatProductName">Nom du Produit:</label>
+                    <input type="text" id="achatProductName" required>
+                </div>
+                <div>
+                    <label for="achatQuantity">Quantité Achetée:</label>
+                    <input type="number" id="achatQuantity" min="1" required>
+                </div>
+                <div>
+                    <label for="achatUnitPrice">Prix Unitaire d'Achat (€):</label>
+                    <input type="number" id="achatUnitPrice" step="0.01" min="0.01" required>
+                </div>
+                <button type="submit" class="btn btn-success">Enregistrer Achat</button><br><br>
+                <button type="button" class="btn btn-secondary" onclick="resetAchatForm()">Annuler</button>
+            </form>
+
+            <h3>Liste des Achats</h3>
+            <table id="achatsTable">
+                <thead>
+                    <tr>
+                        <th>Nom du Produit</th>
+                        <th>Qté Achetée</th>
+                        <th>Prix Unitaire</th>
+                        <th>Total Achat</th>
+                        <th>Stock Actuel du Produit</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+            <div id="achatsTotals" class="totals"></div>
+        </div>
+
+        <!-- Section Ventes -->
+        <div id="venteScreen" class="screen">
+            <h2>Gestion des Ventes</h2>
+            <button class="btn btn-secondary" onclick="showScreen('homeScreen')">accueil</button>
+
+            <form id="venteForm">
+                <h3>Enregistrer/Modifier une Vente</h3>
+                <input type="hidden" id="venteId">
+                <div>
+                    <label for="venteProductName">Produit à Vendre:</label>
+                    <select id="venteProductName" required></select>
+                    <div id="productStockInfo" class="product-stock-info"></div>
+                </div>
+                <div>
+                    <label for="venteQuantity">Quantité Vendue:</label>
+                    <input type="number" id="venteQuantity" min="1" required>
+                </div>
+                <div>
+                    <label for="venteUnitPrice">Prix de Vente Unitaire (€):</label>
+                    <input type="number" id="venteUnitPrice" step="0.01" min="0.01" required>
+                </div>
+                <button type="submit" class="btn btn-success">Enregistrer Vente</button><br><br>
+                <button type="button" class="btn btn-secondary" onclick="resetVenteForm()">Annuler</button>
+            </form>
+
+            <h3>Liste des Ventes</h3>
+            <table id="ventesTable">
+                <thead>
+                    <tr>
+                        <th>Nom du Produit</th>
+                        <th>Quantité Vendue</th>
+                        <th>Prix Vente Unitaire</th>
+                        <th>Total Vente</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+            <div id="ventesTotals" class="totals"></div>
+        </div>
+
+        <!-- Section Dettes -->
+        <div id="detteScreen" class="screen">
+            <h2>Gestion des Dettes</h2>
+            <button class="btn btn-secondary" onclick="showScreen('homeScreen')">accueil</button>
+            
+            <form id="detteForm">
+                <h3>Ajouter/Modifier une Dette</h3>
+                <input type="hidden" id="detteId">
+                <div>
+                    <label for="detteType">Type de Dette:</label>
+                    <select id="detteType" required>
+                        <option value="client">Client (Créance)</option>
+                        <option value="fournisseur">Fournisseur (Dette à payer)</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="detteNomPersonne">Nom (Client/Fournisseur):</label>
+                    <input type="text" id="detteNomPersonne" required>
+                </div>
+                <div>
+                    <label for="detteMontant">Montant (€):</label>
+                    <input type="number" id="detteMontant" step="0.01" required>
+                </div>
+                <div>
+                    <label for="detteDateCreation">Date de Création:</label>
+                    <input type="date" id="detteDateCreation" required>
+                </div>
+                 <div>
+                    <label for="detteDateEcheance">Date d'Échéance (Optionnel):</label>
+                    <input type="date" id="detteDateEcheance">
+                </div>
+                <div>
+                    <label for="detteDescription">Description (Optionnel):</label>
+                    <textarea id="detteDescription"></textarea>
+                </div>
+                <div>
+                    <label for="detteStatut">Statut:</label>
+                    <select id="detteStatut" required>
+                        <option value="non payee">Non Payée</option>
+                        <option value="payee">Payée</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-success">Enregistrer Dette</button><br><br>
+                <button type="button" class="btn btn-secondary" onclick="resetDetteForm()">Annuler</button>
+            </form>
+
+            <h3>Liste des Dettes</h3>
+            <table id="dettesTable">
+                <thead>
+                    <tr>
+                        <th>Type</th>
+                        <th>Nom</th>
+                        <th>Montant</th>
+                        <th>Date Création</th>
+                        <th>Échéance</th>
+                        <th>Description</th>
+                        <th>Statut</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+            <div id="dettesTotals" class="totals"></div>
+        </div>
+    </div>
+
+    <script>
+        let purchases = [];
+        let sales = [];
+        let debts = []; 
+        let editingAchatId = null;
+        let editingVenteId = null;
+        let editingDetteId = null;
+
+        // --- Utility Functions ---
+        function generateId() {
+            return '_' + Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
+        }
+
+        function saveData() {
+            localStorage.setItem('purchases', JSON.stringify(purchases));
+            localStorage.setItem('sales', JSON.stringify(sales));
+            localStorage.setItem('debts', JSON.stringify(debts));
+        }
+
+        function loadData() {
+            purchases = JSON.parse(localStorage.getItem('purchases')) || [];
+            sales = JSON.parse(localStorage.getItem('sales')) || [];
+            debts = JSON.parse(localStorage.getItem('debts')) || [];
+        }
+
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => screen.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+            
+            if (screenId === 'achatScreen') {
+                renderAchatsTable();
+            } else if (screenId === 'venteScreen') {
+                populateProductsForSale();
+                renderVentesTable(); 
+            } else if (screenId === 'detteScreen') { 
+                renderDettesTable(); 
+            }
+        }
+
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(amount);
+        }
+        function formatDate(dateString) {
+            if (!dateString) return '-';
+            const date = new Date(dateString);
+             // Ajoute un jour car new Date(yyyy-mm-dd) interprète comme UTC minuit, ce qui peut reculer d'un jour selon le fuseau horaire.
+            date.setDate(date.getDate() +1);
+            return date.toLocaleDateString('fr-FR', { year: 'numeric', month: '2-digit', day: '2-digit' });
+        }
+
+
+        // --- Stock Calculation ---
+        function calculateAllStock() {
+            const stock = {};
+            purchases.forEach(p => {
+                const quantity = parseFloat(p.quantity);
+                stock[p.name] = (stock[p.name] || 0) + quantity;
+            });
+            sales.forEach(s => {
+                const quantitySold = parseFloat(s.quantitySold);
+                if (stock[s.productName] !== undefined) {
+                    stock[s.productName] -= quantitySold;
+                } else {
+                    stock[s.productName] = -quantitySold; 
+                }
+            });
+            return stock;
+        }
+        
+        function getProductStock(productName) {
+            const allStock = calculateAllStock();
+            return allStock[productName] || 0;
+        }
+
+        // --- Achat (Purchases) Logic ---
+        const achatForm = document.getElementById('achatForm');
+        const achatIdInput = document.getElementById('achatId');
+        const achatProductNameInput = document.getElementById('achatProductName');
+        const achatQuantityInput = document.getElementById('achatQuantity');
+        const achatUnitPriceInput = document.getElementById('achatUnitPrice');
+
+        function renderAchatsTable() {
+            const tbody = document.getElementById('achatsTable').getElementsByTagName('tbody')[0];
+            tbody.innerHTML = '';
+            let totalQuantityPurchased = 0;
+            let totalCostOfPurchases = 0;  
+
+            purchases.forEach(p => {
+                const row = tbody.insertRow();
+                const totalPriceOfThisPurchase = parseFloat(p.quantity) * parseFloat(p.unitPrice);
+                
+                row.insertCell().textContent = p.name;
+                row.cells[0].setAttribute('data-label', 'Nom Produit');
+                row.insertCell().textContent = p.quantity;
+                row.cells[1].setAttribute('data-label', 'Qté Achetée');
+                row.insertCell().textContent = formatCurrency(parseFloat(p.unitPrice));
+                row.cells[2].setAttribute('data-label', 'Prix Unitaire');
+                row.insertCell().textContent = formatCurrency(totalPriceOfThisPurchase);
+                row.cells[3].setAttribute('data-label', 'Total Achat');
+
+                const stockActuelProduit = getProductStock(p.name);
+                const stockCell = row.insertCell();
+                stockCell.textContent = stockActuelProduit;
+                stockCell.setAttribute('data-label', 'Stock Actuel');
+                if (stockActuelProduit <= 0 && sales.some(s => s.productName === p.name)) { 
+                    stockCell.classList.add('alert-stock');
+                }
+                
+                const actionsCell = row.insertCell();
+                actionsCell.setAttribute('data-label', 'Actions');
+                actionsCell.classList.add('actions');
+                
+                const editButton = document.createElement('button');
+                editButton.textContent = 'Modifier';
+                editButton.classList.add('btn', 'btn-warning');
+                editButton.onclick = () => editAchat(p.id);
+                actionsCell.appendChild(editButton);
+
+                const deleteButton = document.createElement('button');
+                deleteButton.textContent = 'Supprimer';
+                deleteButton.classList.add('btn', 'btn-danger');
+                deleteButton.onclick = () => deleteAchat(p.id);
+                actionsCell.appendChild(deleteButton);
+
+                totalQuantityPurchased += parseFloat(p.quantity);
+                totalCostOfPurchases += totalPriceOfThisPurchase;
+            });
+
+            document.getElementById('achatsTotals').innerHTML = `
+                <p><strong>Quantité Totale Achetée (tous produits):</strong> ${totalQuantityPurchased} unités</p>
+                <p><strong>Coût Total des Achats:</strong> ${formatCurrency(totalCostOfPurchases)}</p>
+            `;
+        }
+
+        achatForm.onsubmit = function(event) {
+            event.preventDefault();
+            const id = achatIdInput.value;
+            const name = achatProductNameInput.value.trim();
+            const quantity = parseFloat(achatQuantityInput.value);
+            const unitPrice = parseFloat(achatUnitPriceInput.value);
+
+            if (!name || isNaN(quantity) || quantity <= 0 || isNaN(unitPrice) || unitPrice <= 0) {
+                alert("Veuillez remplir tous les champs correctement.");
+                return;
+            }
+
+            if (id) { 
+                const index = purchases.findIndex(p => p.id === id);
+                if (index > -1) {
+                    const oldPurchase = purchases[index];
+                    const projectedStockAfterEdit = getProductStock(oldPurchase.name) - parseFloat(oldPurchase.quantity) + quantity;
+                    if (projectedStockAfterEdit < 0) {
+                         alert(`Modification invalide. La nouvelle quantité achetée pour "${oldPurchase.name}" entraînerait un stock total négatif (${projectedStockAfterEdit}) compte tenu des ventes existantes.`);
+                         return;
+                    }
+                    purchases[index] = { ...purchases[index], name, quantity, unitPrice };
+                }
+            } else { 
+                purchases.push({ id: generateId(), name, quantity, unitPrice });
+            }
+            
+            saveData();
+            renderAchatsTable();
+            resetAchatForm();
+        };
+
+        function editAchat(id) {
+            const purchase = purchases.find(p => p.id === id);
+            if (purchase) {
+                achatIdInput.value = purchase.id;
+                achatProductNameInput.value = purchase.name;
+                achatQuantityInput.value = purchase.quantity;
+                achatUnitPriceInput.value = purchase.unitPrice;
+                achatForm.querySelector('button[type="submit"]').textContent = 'Modifier Achat';
+                window.scrollTo(0, achatForm.offsetTop); 
+            }
+        }
+
+        function deleteAchat(id) {
+            const purchaseToDelete = purchases.find(p => p.id === id);
+            if (!purchaseToDelete) return;
+            const stockWithoutThisPurchase = getProductStock(purchaseToDelete.name) - parseFloat(purchaseToDelete.quantity);
+            if (stockWithoutThisPurchase < 0) {
+                if (!confirm(`Attention : La suppression de cet achat pour "${purchaseToDelete.name}" entraînera un stock total négatif (${stockWithoutThisPurchase}) pour ce produit. Voulez-vous continuer ?`)) {
+                    return;
+                }
+            } else {
+                 if (!confirm("Êtes-vous sûr de vouloir supprimer cet achat ?")) return;
+            }
+            purchases = purchases.filter(p => p.id !== id);
+            saveData();
+            renderAchatsTable();
+        }
+        
+        function resetAchatForm() {
+            achatForm.reset();
+            achatIdInput.value = '';
+            achatForm.querySelector('button[type="submit"]').textContent = 'Enregistrer Achat';
+        }
+
+        // --- Vente (Sales) Logic ---
+        const venteForm = document.getElementById('venteForm');
+        const venteIdInput = document.getElementById('venteId');
+        const venteProductNameSelect = document.getElementById('venteProductName');
+        const venteQuantityInput = document.getElementById('venteQuantity');
+        const venteUnitPriceInput = document.getElementById('venteUnitPrice');
+        const productStockInfoDiv = document.getElementById('productStockInfo');
+
+        function populateProductsForSale() {
+            const previouslySelectedProduct = venteProductNameSelect.value;
+            venteProductNameSelect.innerHTML = '<option value="">-- Sélectionner un produit --</option>';
+            const stock = calculateAllStock();
+            const productNames = [...new Set(purchases.map(p => p.name))]; 
+
+            productNames.sort().forEach(name => {
+                const currentStock = stock[name] || 0;
+                const option = document.createElement('option');
+                option.value = name;
+                option.textContent = `${name} (Stock: ${currentStock})`;
+                venteProductNameSelect.appendChild(option);
+            });
+            
+            if (productNames.includes(previouslySelectedProduct)) {
+                venteProductNameSelect.value = previouslySelectedProduct;
+            }
+            
+            if (venteProductNameSelect.value) {
+                 const currentStockForSelected = getProductStock(venteProductNameSelect.value);
+                 productStockInfoDiv.textContent = `Stock disponible pour ${venteProductNameSelect.value}: ${currentStockForSelected}`;
+            } else {
+                 productStockInfoDiv.textContent = '';
+            }
+        }
+        
+        venteProductNameSelect.onchange = function() {
+            const selectedProductName = this.value;
+            if (selectedProductName) {
+                const stock = getProductStock(selectedProductName);
+                productStockInfoDiv.textContent = `Stock disponible pour ${selectedProductName}: ${stock}`;
+            } else {
+                productStockInfoDiv.textContent = '';
+            }
+        };
+
+        function renderVentesTable() {
+            const tbody = document.getElementById('ventesTable').getElementsByTagName('tbody')[0];
+            tbody.innerHTML = '';
+            let totalQuantitySold = 0;
+            let totalRevenue = 0;
+
+            sales.forEach(s => {
+                const row = tbody.insertRow();
+                const totalPrice = parseFloat(s.quantitySold) * parseFloat(s.unitSalePrice);
+                row.insertCell().textContent = s.productName;
+                row.cells[0].setAttribute('data-label', 'Nom Produit');
+                row.insertCell().textContent = s.quantitySold;
+                row.cells[1].setAttribute('data-label', 'Qté Vendue');
+                row.insertCell().textContent = formatCurrency(parseFloat(s.unitSalePrice));
+                row.cells[2].setAttribute('data-label', 'Prix Vente');
+                row.insertCell().textContent = formatCurrency(totalPrice);
+                row.cells[3].setAttribute('data-label', 'Total Vente');
+
+                const actionsCell = row.insertCell();
+                actionsCell.setAttribute('data-label', 'Actions');
+                actionsCell.classList.add('actions');
+
+                const editButton = document.createElement('button');
+                editButton.textContent = 'Modifier';
+                editButton.classList.add('btn', 'btn-warning');
+                editButton.onclick = () => editVente(s.id);
+                actionsCell.appendChild(editButton);
+
+                const deleteButton = document.createElement('button');
+                deleteButton.textContent = 'Supprimer';
+                deleteButton.classList.add('btn', 'btn-danger');
+                deleteButton.onclick = () => deleteVente(s.id);
+                actionsCell.appendChild(deleteButton);
+                
+                totalQuantitySold += parseFloat(s.quantitySold);
+                totalRevenue += totalPrice;
+            });
+            
+            document.getElementById('ventesTotals').innerHTML = `
+                <p><strong>Quantité Totale Vendue:</strong> ${totalQuantitySold} unités</p>
+                <p><strong>Revenu Total des Ventes:</strong> ${formatCurrency(totalRevenue)}</p>
+            `;
+        }
+
+        venteForm.onsubmit = function(event) {
+            event.preventDefault();
+            const id = venteIdInput.value;
+            const productName = venteProductNameSelect.value;
+            const quantitySold = parseFloat(venteQuantityInput.value);
+            const unitSalePrice = parseFloat(venteUnitPriceInput.value);
+
+            if (!productName || isNaN(quantitySold) || quantitySold <= 0 || isNaN(unitSalePrice) || unitSalePrice <= 0) {
+                alert("Veuillez remplir tous les champs correctement.");
+                return;
+            }
+
+            let stockAvailable = getProductStock(productName);
+            let originalQuantityInThisSale = 0;
+
+            if (id) { 
+                const existingSale = sales.find(s => s.id === id);
+                if (existingSale && existingSale.productName === productName) {
+                    originalQuantityInThisSale = parseFloat(existingSale.quantitySold);
+                }
+            }
+            
+            if (quantitySold > stockAvailable + originalQuantityInThisSale) {
+                 alert(`Stock insuffisant pour "${productName}". Stock disponible (incluant cette vente si modifiée): ${stockAvailable + originalQuantityInThisSale}, Quantité demandée: ${quantitySold}.`);
+                 return;
+            }
+
+            if (id) { 
+                const index = sales.findIndex(s => s.id === id);
+                if (index > -1) {
+                    sales[index] = { ...sales[index], productName, quantitySold, unitSalePrice };
+                }
+            } else { 
+                sales.push({ id: generateId(), productName, quantitySold, unitSalePrice });
+            }
+            
+            saveData();
+            renderVentesTable();
+            populateProductsForSale(); 
+            resetVenteForm();
+
+            const finalStock = getProductStock(productName);
+            if (finalStock < 0) { 
+                alert(`Alerte critique : Le stock du produit "${productName}" est maintenant NÉGATIF (${finalStock}) ! Veuillez vérifier vos transactions.`);
+            } else if (finalStock === 0) {
+                alert(`Attention : Le produit "${productName}" est maintenant épuisé.`);
+            }
+            
+            if (venteProductNameSelect.value) {
+                productStockInfoDiv.textContent = `Stock disponible pour ${venteProductNameSelect.value}: ${getProductStock(venteProductNameSelect.value)}`;
+            } else {
+                productStockInfoDiv.textContent = '';
+            }
+        };
+
+        function editVente(id) {
+            const sale = sales.find(s => s.id === id);
+            if (sale) {
+                editingVenteId = id; 
+                populateProductsForSale(); 
+
+                venteIdInput.value = sale.id;
+                venteProductNameSelect.value = sale.productName; 
+                
+                const event = new Event('change');
+                venteProductNameSelect.dispatchEvent(event);
+                
+                venteQuantityInput.value = sale.quantitySold;
+                venteUnitPriceInput.value = sale.unitSalePrice;
+                venteForm.querySelector('button[type="submit"]').textContent = 'Modifier Vente';
+                window.scrollTo(0, venteForm.offsetTop);
+            }
+        }
+
+        function deleteVente(id) {
+            if (!confirm("Êtes-vous sûr de vouloir supprimer cette vente ? Le stock du produit sera réajusté.")) return;
+            sales = sales.filter(s => s.id !== id);
+            saveData();
+            renderVentesTable();
+            populateProductsForSale(); 
+            resetVenteForm(); 
+        }
+
+        function resetVenteForm() {
+            venteForm.reset();
+            venteIdInput.value = '';
+            productStockInfoDiv.textContent = ''; 
+            venteForm.querySelector('button[type="submit"]').textContent = 'Enregistrer Vente';
+            editingVenteId = null; 
+            if (document.getElementById('venteScreen').classList.contains('active')) {
+                populateProductsForSale();
+            }
+        }
+
+        // --- Dette (Debts) Logic ---
+        const detteForm = document.getElementById('detteForm');
+        const detteIdInput = document.getElementById('detteId');
+        const detteTypeSelect = document.getElementById('detteType');
+        const detteNomPersonneInput = document.getElementById('detteNomPersonne');
+        const detteMontantInput = document.getElementById('detteMontant');
+        const detteDateCreationInput = document.getElementById('detteDateCreation');
+        const detteDateEcheanceInput = document.getElementById('detteDateEcheance');
+        const detteDescriptionTextarea = document.getElementById('detteDescription');
+        const detteStatutSelect = document.getElementById('detteStatut');
+
+        function renderDettesTable() {
+            const tbody = document.getElementById('dettesTable').getElementsByTagName('tbody')[0];
+            tbody.innerHTML = '';
+            let totalCreancesNonPayees = 0;
+            let totalDettesFournisseursNonPayees = 0;
+
+            debts.forEach(d => {
+                const row = tbody.insertRow();
+                row.classList.add(d.statut === 'payee' ? 'status-paid' : 'status-unpaid');
+                
+                row.insertCell().textContent = d.type === 'client' ? 'Client (Créance)' : 'Fournisseur (Dette)';
+                row.cells[0].setAttribute('data-label', 'Type');
+                row.insertCell().textContent = d.nomPersonne;
+                row.cells[1].setAttribute('data-label', 'Nom');
+                row.insertCell().textContent = formatCurrency(parseFloat(d.montant));
+                row.cells[2].setAttribute('data-label', 'Montant');
+                row.insertCell().textContent = formatDate(d.dateCreation);
+                row.cells[3].setAttribute('data-label', 'Date Création');
+                row.insertCell().textContent = d.dateEcheance ? formatDate(d.dateEcheance) : '-';
+                row.cells[4].setAttribute('data-label', 'Échéance');
+                row.insertCell().textContent = d.description || '-';
+                row.cells[5].setAttribute('data-label', 'Description');
+                
+                const statutCell = row.insertCell();
+                statutCell.textContent = d.statut === 'payee' ? 'Payée' : 'Non Payée';
+                statutCell.setAttribute('data-label', 'Statut');
+
+
+                const actionsCell = row.insertCell();
+                actionsCell.setAttribute('data-label', 'Actions');
+                actionsCell.classList.add('actions');
+
+                const editButton = document.createElement('button');
+                editButton.textContent = 'Modifier';
+                editButton.classList.add('btn', 'btn-warning');
+                editButton.onclick = () => editDette(d.id);
+                actionsCell.appendChild(editButton);
+
+                const deleteButton = document.createElement('button');
+                deleteButton.textContent = 'Supprimer';
+                deleteButton.classList.add('btn', 'btn-danger');
+                deleteButton.onclick = () => deleteDette(d.id);
+                actionsCell.appendChild(deleteButton);
+                
+                const toggleStatusButton = document.createElement('button');
+                toggleStatusButton.textContent = d.statut === 'payee' ? 'Marquer Non Payée' : 'Marquer Payée';
+                toggleStatusButton.classList.add('btn', d.statut === 'payee' ? 'btn-secondary' : 'btn-success', 'btn-toggle-status');
+                toggleStatusButton.onclick = () => toggleDetteStatut(d.id);
+                actionsCell.appendChild(toggleStatusButton);
+
+                if (d.statut === 'non payee') {
+                    if (d.type === 'client') {
+                        totalCreancesNonPayees += parseFloat(d.montant);
+                    } else {
+                        totalDettesFournisseursNonPayees += parseFloat(d.montant);
+                    }
+                }
+            });
+
+            document.getElementById('dettesTotals').innerHTML = `
+                <p><strong>Total Créances Clients (Non Payées):</strong> ${formatCurrency(totalCreancesNonPayees)}</p>
+                <p><strong>Total Dettes Fournisseurs (Non Payées):</strong> ${formatCurrency(totalDettesFournisseursNonPayees)}</p>
+            `;
+        }
+
+        detteForm.onsubmit = function(event) {
+            event.preventDefault();
+            const id = detteIdInput.value;
+            const type = detteTypeSelect.value;
+            const nomPersonne = detteNomPersonneInput.value.trim();
+            const montant = parseFloat(detteMontantInput.value);
+            const dateCreation = detteDateCreationInput.value;
+            const dateEcheance = detteDateEcheanceInput.value || null; // null si vide
+            const description = detteDescriptionTextarea.value.trim();
+            const statut = detteStatutSelect.value;
+
+            if (!type || !nomPersonne || isNaN(montant) || montant <=0 || !dateCreation || !statut) {
+                alert("Veuillez remplir tous les champs obligatoires (Type, Nom, Montant, Date Création, Statut).");
+                return;
+            }
+
+            const detteData = { type, nomPersonne, montant, dateCreation, dateEcheance, description, statut };
+
+            if (id) { // Modification
+                const index = debts.findIndex(d => d.id === id);
+                if (index > -1) {
+                    debts[index] = { ...debts[index], ...detteData };
+                }
+            } else { // Ajout
+                debts.push({ id: generateId(), ...detteData });
+            }
+            
+            saveData();
+            renderDettesTable();
+            resetDetteForm();
+        };
+
+        function editDette(id) {
+            const dette = debts.find(d => d.id === id);
+            if (dette) {
+                detteIdInput.value = dette.id;
+                detteTypeSelect.value = dette.type;
+                detteNomPersonneInput.value = dette.nomPersonne;
+                detteMontantInput.value = dette.montant;
+                detteDateCreationInput.value = dette.dateCreation;
+                detteDateEcheanceInput.value = dette.dateEcheance || '';
+                detteDescriptionTextarea.value = dette.description || '';
+                detteStatutSelect.value = dette.statut;
+                detteForm.querySelector('button[type="submit"]').textContent = 'Modifier Dette';
+                window.scrollTo(0, detteForm.offsetTop);
+            }
+        }
+
+        function deleteDette(id) {
+            if (!confirm("Êtes-vous sûr de vouloir supprimer cette dette ?")) return;
+            debts = debts.filter(d => d.id !== id);
+            saveData();
+            renderDettesTable();
+        }
+
+        function toggleDetteStatut(id) {
+            const index = debts.findIndex(d => d.id === id);
+            if (index > -1) {
+                debts[index].statut = debts[index].statut === 'payee' ? 'non payee' : 'payee';
+                saveData();
+                renderDettesTable();
+            }
+        }
+        
+        function resetDetteForm() {
+            detteForm.reset();
+            detteIdInput.value = '';
+            detteDateEcheanceInput.value = ''; // S'assurer que les dates optionnelles sont bien vidées
+            detteDescriptionTextarea.value = '';
+            detteForm.querySelector('button[type="submit"]').textContent = 'Enregistrer Dette';
+        }
+
+
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            loadData();
+            showScreen('homeScreen'); 
+        });
+    </script>
+</body>
+</html>
