@@ -309,7 +309,7 @@
                     <input type="number" id="achatQuantity" min="1" required>
                 </div>
                 <div>
-                    <label for="achatUnitPrice">Prix Unitaire d'Achat (€):</label>
+                    <label for="achatUnitPrice">Prix Unitaire d'Achat ($):</label>
                     <input type="number" id="achatUnitPrice" step="0.01" min="0.01" required>
                 </div>
                 <button type="submit" class="btn btn-success">Enregistrer Achat</button><br><br>
@@ -351,7 +351,7 @@
                     <input type="number" id="venteQuantity" min="1" required>
                 </div>
                 <div>
-                    <label for="venteUnitPrice">Prix de Vente Unitaire (€):</label>
+                    <label for="venteUnitPrice">Prix de Vente Unitaire ($):</label>
                     <input type="number" id="venteUnitPrice" step="0.01" min="0.01" required>
                 </div>
                 <button type="submit" class="btn btn-success">Enregistrer Vente</button><br><br>
@@ -394,7 +394,7 @@
                     <input type="text" id="detteNomPersonne" required>
                 </div>
                 <div>
-                    <label for="detteMontant">Montant (€):</label>
+                    <label for="detteMontant">Montant ($):</label>
                     <input type="number" id="detteMontant" step="0.01" required>
                 </div>
                 <div>
@@ -535,9 +535,9 @@
                 row.cells[0].setAttribute('data-label', 'Nom Produit');
                 row.insertCell().textContent = p.quantity;
                 row.cells[1].setAttribute('data-label', 'Qté Achetée');
-                row.insertCell().textContent = formatCurrency(parseFloat(p.unitPrice));
+                row.insertCell().textContent = (parseFloat(p.unitPrice)+" $");
                 row.cells[2].setAttribute('data-label', 'Prix Unitaire');
-                row.insertCell().textContent = formatCurrency(totalPriceOfThisPurchase);
+                row.insertCell().textContent = (totalPriceOfThisPurchase)+" $";
                 row.cells[3].setAttribute('data-label', 'Total Achat');
 
                 const stockActuelProduit = getProductStock(p.name);
@@ -570,7 +570,7 @@
 
             document.getElementById('achatsTotals').innerHTML = `
                 <p><strong>Quantité Totale Achetée (tous produits):</strong> ${totalQuantityPurchased} unités</p>
-                <p><strong>Coût Total des Achats:</strong> ${formatCurrency(totalCostOfPurchases)}</p>
+                <p><strong>Coût Total des Achats:</strong> ${(totalCostOfPurchases)} $</p>
             `;
         }
 
@@ -697,9 +697,9 @@
                 row.cells[0].setAttribute('data-label', 'Nom Produit');
                 row.insertCell().textContent = s.quantitySold;
                 row.cells[1].setAttribute('data-label', 'Qté Vendue');
-                row.insertCell().textContent = formatCurrency(parseFloat(s.unitSalePrice));
+                row.insertCell().textContent = (parseFloat(s.unitSalePrice) +"$");
                 row.cells[2].setAttribute('data-label', 'Prix Vente');
-                row.insertCell().textContent = formatCurrency(totalPrice);
+                row.insertCell().textContent =(totalPrice)+"$";
                 row.cells[3].setAttribute('data-label', 'Total Vente');
 
                 const actionsCell = row.insertCell();
@@ -724,7 +724,7 @@
             
             document.getElementById('ventesTotals').innerHTML = `
                 <p><strong>Quantité Totale Vendue:</strong> ${totalQuantitySold} unités</p>
-                <p><strong>Revenu Total des Ventes:</strong> ${formatCurrency(totalRevenue)}</p>
+                <p><strong>Revenu Total des Ventes:</strong> ${(totalRevenue)} $</p>
             `;
         }
 
@@ -847,7 +847,7 @@
                 row.cells[0].setAttribute('data-label', 'Type');
                 row.insertCell().textContent = d.nomPersonne;
                 row.cells[1].setAttribute('data-label', 'Nom');
-                row.insertCell().textContent = formatCurrency(parseFloat(d.montant));
+                row.insertCell().textContent = (parseFloat(d.montant))+" $";
                 row.cells[2].setAttribute('data-label', 'Montant');
                 row.insertCell().textContent = formatDate(d.dateCreation);
                 row.cells[3].setAttribute('data-label', 'Date Création');
