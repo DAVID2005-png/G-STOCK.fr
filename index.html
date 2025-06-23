@@ -6,330 +6,49 @@
     <title>G-STOCK</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/>
     <link rel="stylesheet" href="style.css">
-    <style>
-        :root {
-            --primary-color: #007bff;
-            --secondary-color: #6c757d;
-            --success-color: #28a745;
-            --danger-color: #dc3545;
-            --warning-color: #ffc107;
-            --info-color: #17a2b8; 
-            --light-color: #f8f9fa;
-            --dark-color: #343a40;
-            --paid-color: #a3d9a5; /* Vert clair pour payé */
-            --unpaid-color: #f9caca; /* Rouge clair pour non payé */
-            --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        body {
-            font-family: var(--font-family);
-            margin: 0;
-            padding: 0;
-            background-color: var(--light-color);
-            color: var(--dark-color);
-            line-height: 1.6;
-        }
-
-        .container {
-            max-width: 1300px; /* Légèrement augmenté pour plus de colonnes potentielles */
-            margin: 20px auto;
-            height: calc(100vh - 9.5rem);
-            padding: 20px;
-            background-color: #fff;
-            box-shadow: 0 0 15px rgba(0,0,0,0.5);
-            border-radius: 8px;
-        }
-
-        header {
-            background-color: var(--primary-color);
-            color: white;
-            padding: 1rem 0;
-            text-align: center;
-            margin-bottom: 20px;
-            border-radius: 8px 8px 0 0;
-        }
-
-        header h1 {
-            margin: 0;
-            font-size: 2rem;
-        }
-
-        nav ul {
-            list-style: none;
-            padding: 0;
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        nav ul li {
-            display: inline-block;
-            margin: 0 10px;
-        }
-
-        nav ul li button, .btn {
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            text-decoration: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 1rem;
-            transition: background-color 0.3s ease, transform 0.2s ease;
-        }
-
-        nav ul li button:hover, .btn:hover {
-            background-color: #0056b3;
-            transform: translateY(-2px);
-        }
-
-        .btn-secondary { background-color: var(--secondary-color); }
-        .btn-secondary:hover { background-color: #545b62; }
-        .btn-success { background-color: var(--success-color); }
-        .btn-success:hover { background-color: #1e7e34; }
-        .btn-danger { background-color: var(--danger-color); }
-        .btn-danger:hover { background-color: #b21f2d; }
-        .btn-warning { background-color: var(--warning-color); color: #333; }
-        .btn-warning:hover { background-color: #d39e00; }
-        .btn-info { background-color: var(--info-color); }
-        .btn-info:hover { background-color: #117a8b; }
-        .btn-toggle-status { padding: 6px 10px; font-size: 0.9em; }
-
-
-        .screen { display: none; }
-        .screen.active { display: block; }
-
-        h2 {
-            color: var(--primary-color);
-            text-align: center;
-            border-bottom: 2px solid var(--primary-color);
-            padding-bottom: 10px;
-            margin-top: 0;
-        }
-        #detteScreen h2 { color: var(--info-color); border-bottom-color: var(--info-color); }
-
-
-        form {
-            background-color: var(--light-color);
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.05);
-        }
-
-        form label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: bold;
-        }
-
-        form input[type="text"],
-        form input[type="number"],
-        form input[type="date"],
-        form select,
-        form textarea {
-            width: calc(100% - 22px);
-            padding: 10px;
-            margin-bottom: 15px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-        form textarea {
-            min-height: 80px;
-            resize: vertical;
-        }
-        
-        form input[type="number"]::-webkit-inner-spin-button,
-        form input[type="number"]::-webkit-outer-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
-        }
-        form input[type="number"] {
-            -moz-appearance: textfield;
-        }
-
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-        }
-
-        table th, table td {
-            border: 1px solid #ddd;
-            padding: 10px; /* Réduit pour plus de colonnes */
-            text-align: left;
-            font-size: 0.95em; /* Légèrement réduit pour plus de colonnes */
-        }
-
-        table th {
-            background-color: var(--primary-color);
-            color: white;
-        }
-        #detteScreen table th { background-color: var(--info-color); }
-
-
-        table tr:nth-child(even) {
-            background-color: var(--light-color);
-        }
-        
-        table tr:hover {
-            background-color: #e9ecef;
-        }
-        
-        .status-paid { background-color: var(--paid-color) !important; color: #206322; }
-        .status-unpaid { background-color: var(--unpaid-color) !important; color: #7d2121; }
-
-
-        .actions button {
-            margin-right: 5px;
-            padding: 8px 12px;
-        }
-
-        .totals {
-            background-color: var(--dark-color);
-            color: white;
-            padding: 15px;
-            border-radius: 5px;
-            margin-top: 20px;
-        }
-        .totals p { margin: 5px 0; font-size: 1.1rem; }
-        .totals strong { font-weight: bold; }
-
-        .alert-stock {
-            color: var(--danger-color);
-            font-weight: bold;
-        }
-        
-        .product-stock-info {
-            font-size: 0.9em;
-            color: var(--secondary-color);
-            margin-top: -10px;
-            margin-bottom: 15px;
-        }
-
-        /* Responsive Design */
-        @media (max-width: 992px) { 
-             nav ul li {
-                margin: 0 5px; 
-            }
-            nav ul li button {
-                padding: 10px 15px;
-            }
-        }
-
-
-        @media (max-width: 768px) {
-            nav ul li {
-                display: block;
-                margin: 3rem 0;
-            }
-            .container{
-                height: 30rem;
-            }
-            li button, .btn {
-                width: 100%;
-                box-sizing: border-box;
-            }
-            form input[type="text"],
-            form input[type="number"],
-            form input[type="date"],
-            form select,
-            form textarea {
-                width: 100%;
-            }
-            table, thead, tbody, th, td, tr {
-                display: block;
-            }
-            table thead tr {
-                position: absolute;
-                top: -9999px;
-                left: -9999px;
-            }
-            table tr {
-                border: 1px solid #ccc;
-                margin-bottom: 10px;
-                border-radius: 5px;
-            }
-            table td {
-                border: none;
-                border-bottom: 1px solid #eee;
-                position: relative;
-                padding-left: 45%; /* Ajusté pour plus de labels */
-                text-align: right;
-                font-size: 1em; /* Rétablir la taille pour mobile */
-            }
-            table td::before {
-                content: attr(data-label);
-                position: absolute;
-                left: 10px;
-                width: calc(45% - 20px); /* Ajusté */
-                padding-right: 10px;
-                white-space: nowrap;
-                font-weight: bold;
-                text-align: left;
-            }
-            .actions button {
-                display: inline-block;
-                margin: 5px 5px 5px 0;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css ">
 </head>
 <body>
     <div class="container">
-        <header>
+       <div class="principal">
+         <header>
             <h1>G-STOCK</h1>
+            <i class="fas fa-bars" id="fas"></i>
         </header>
-
+        <div class="title">
+                <a href="">App G-STOCK</a>
+                <p>
+                    Suivez vos ventes, vos stocks et vos Clients en un seul endroit
+                </p>
+                <code id="fas1">Commencez maintenant</code>
+        </div>
         <div id="homeScreen" class="screen active">
             <nav>
                 <ul>
-                    <li><button onclick="showScreen('achatScreen')">Gestion des Achats</button></li>
-                    <li><button onclick="showScreen('venteScreen')">Gestion des Ventes</button></li>
+                    <li><button id="btn" class="btn btn-secondary" onclick="showScreen('homeScreen')">accueil</button></li>
+                    <li><button class="btn-achat" onclick="showScreen('achatScreen')">Gestion des Achats</button></li>
+                    <li><button class="btn-achat" onclick="showScreen('venteScreen')">Gestion des Ventes</button></li>
                     <li><button class="btn-info" onclick="showScreen('detteScreen')">Gestion des Dettes</button></li>
                 </ul>
             </nav>
-             <!-- Carousel -->
-                       
-    <div class="container swiper">
-        <h2>Responsables</h2>
-        <div class="card-wrapper">
-            <ul class="card-list swiper-wrapper">
-             <li class="card-item swiper-slide"><a href="#" class="card-link">
-                    <img src="images/car (1).jpg" alt="card Image" class="card-image">
-                    <p class="badge designer">Musk</p>
-                </a>
-            </li>
-
-
-             <li class="card-item swiper-slide"><a href="#" class="card-link">
-                    <img src="images/car (2).jpg" alt="card Image" class="card-image">
-                    <p class="badge developer">Gyslaine</p>
-                </a>
-            </li>
-
-
-
-             <li class="card-item swiper-slide"><a href="#" class="card-link">
-                    <img src="images/IMG-20250425-WA0021.jpg" alt="card Image" class="card-image">
-                    <p class="badge marketer">Shilla</p>
-                </a>
-            </li>
-            </ul>
-
-             <div class="swiper-pagination"></div>
-              <div class="swiper-slide-button swiper-button-prev"></div>
-            <div class="swiper-slide-button swiper-button-next"></div>
+            <div class="animation">
+                   <div class="apk-box">
+                     <h2>
+                        <span style="--i:4;" data-text="Gestionnaire">Gestionnaire</span>
+                        <span style="--i:3;" data-text="des_achats">des_achats</span>
+                        <span style="--i:2;" data-text="et_des_vente">et_des_ventes</span>
+                        <span style="--i:1;" data-text="Produit_stock_magasin">Produit_stock_magasin</span>
+                    </h2>
+                   </div>
+            </div>
+            
         </div>
-    </div>
-        </div>
-
+       
+       </div>
         <!-- Section Achats -->
         <div id="achatScreen" class="screen">
             <h2>Gestion des Achats</h2>
-            <button class="btn btn-secondary" onclick="showScreen('homeScreen')">accueil</button>
+            <button id="btn1" class="btn btn-secondary" onclick="showScreen('homeScreen')">accueil</button>
             
             <form id="achatForm">
                 <h3>Ajouter/Modifier un Achat</h3>
@@ -370,7 +89,7 @@
         <!-- Section Ventes -->
         <div id="venteScreen" class="screen">
             <h2>Gestion des Ventes</h2>
-            <button class="btn btn-secondary" onclick="showScreen('homeScreen')">accueil</button>
+            <button  id="btn2" class="btn btn-secondary" onclick="showScreen('homeScreen')">accueil</button>
 
             <form id="venteForm">
                 <h3>Enregistrer/Modifier une Vente</h3>
@@ -411,7 +130,7 @@
         <!-- Section Dettes -->
         <div id="detteScreen" class="screen">
             <h2>Gestion des Dettes</h2>
-            <button class="btn btn-secondary" onclick="showScreen('homeScreen')">accueil</button>
+            <button id="btn3" class="btn btn-secondary" onclick="showScreen('homeScreen')">accueil</button>
             
             <form id="detteForm">
                 <h3>Ajouter/Modifier une Dette</h3>
@@ -539,7 +258,7 @@
                 } else {
                     stock[s.productName] = -quantitySold; 
                 }
-            });
+            });3
             return stock;
         }
         
