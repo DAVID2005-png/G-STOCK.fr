@@ -26,7 +26,7 @@
             margin: 20px auto;
             height: calc(100vh - 9.5rem);
             padding: 20px;
-            background-color: var(--dark-color);
+            /* background-color: var(--dark-color); */
             box-shadow: 0 0 15px rgba(0,0,0,0.5);
             border-radius: 8px;
             z-index: -2000;
@@ -286,7 +286,7 @@ span::before{
     text-decoration: none;
     -webkit-text-stroke: .9px #fff;
     position: absolute;
-    left: 10px;
+    left: 8px;
     display: none;
 }
 .title p{
@@ -301,7 +301,7 @@ span::before{
 .title code{
     position: absolute;
     top: 20rem;
-    left: 10px;
+    left: 8px;
     padding: 10px;
     width: 90%;
     display: none;
@@ -356,7 +356,6 @@ span::before{
                 margin-left: 1rem;
                 
              }
-           
              
              header .fas{
                 display: block;
@@ -396,8 +395,9 @@ span::before{
             color: #fff;
             position: absolute;
             top: 15rem;
+            left: 1;
             padding: 10px 0;
-            
+            z-index: -1000;
         }
 
         nav{
